@@ -1,37 +1,38 @@
 package com.ndc.be.domain;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ndc.be.util.SecurityUtil;
 import java.time.Instant;
-
+import java.util.List;
 
 @Entity
-@Table(name = "supplier_categories")
+@Table(name = "carts")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SupplierCategory {
+public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "supplier_id")
-    Supplier supplier;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    Category category;
 
     Instant createdAt;
     Instant updatedAt;
     String createdBy;
     String updatedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    User user;
+
+    @OneToMany(mappedBy = "cart")
+    @JsonIgnore
+    private List<CartDetail> cartDetails;
 
     @PrePersist
     public void handleBeforeCreate() {
@@ -48,4 +49,4 @@ public class SupplierCategory {
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
     }
-}
+} 

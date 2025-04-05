@@ -59,7 +59,7 @@ public class User  {
 
     @OneToMany(mappedBy = "user")
     @JsonIgnore
-    private List<ImportHistory> importHistories;
+    private List<Cart> carts;
 
     @PrePersist
     public void handleBeforeCreate() {

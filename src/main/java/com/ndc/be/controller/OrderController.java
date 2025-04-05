@@ -69,8 +69,14 @@ public class OrderController {
             .order(order)
             .build();
 
-        // For TRANSFER payment method, generate a VNPAY payment URL
-        if (order.getPaymentMethod() == PaymentMethod.TRANSFER) {
+        // Xử lý theo phương thức thanh toán
+        if (order.getPaymentMethod() == PaymentMethod.COD) {
+            // Nếu phương thức là COD, đặt trạng thái và thông báo phù hợp
+            order.setPaymentStatus(PaymentStatus.PENDING);
+            order.setPaymentMessage("Cảm ơn bạn đã đặt hàng tại Cosmo");
+            orderService.updateOrder(order);
+        } else if (order.getPaymentMethod() == PaymentMethod.TRANSFER) {
+            // Nếu phương thức là TRANSFER, tạo URL thanh toán VNPay
             String orderInfo = "Thanh toan don hang: " + order.getId();
             String paymentUrl = vnPayService.createPaymentUrl(
                 order.getId(), 

@@ -49,10 +49,6 @@ public class VNPayService {
             // Update order status
             order.setPaymentStatus(PaymentStatus.PAID);
             
-            // Add payment success message - sử dụng số nguyên thay vì định dạng
-            String successMessage = "Người dùng đã thanh toán thành công " + order.getTotalPrice() + " đồng";
-            order.setPaymentMessage(successMessage);
-            
             // Save transaction number from VNPay if available
             if (vnpParams.containsKey("vnp_TransactionNo")) {
                 order.setTransactionNo(vnpParams.get("vnp_TransactionNo"));

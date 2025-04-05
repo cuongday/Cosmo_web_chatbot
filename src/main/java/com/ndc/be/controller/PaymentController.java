@@ -80,20 +80,9 @@ public class PaymentController {
         String redirectUrl;
         
         if (processedOrder.isPresent()) {
-            // Payment successful
+            // Payment successful - chỉ redirect về trang chỉ định
             Order order = processedOrder.get();
-            String message = "";
-            
-            // Add payment message to redirect URL if available
-            if (order.getPaymentMessage() != null && !order.getPaymentMessage().isEmpty()) {
-                try {
-                    message = "&message=" + URLEncoder.encode(order.getPaymentMessage(), StandardCharsets.UTF_8.toString());
-                } catch (UnsupportedEncodingException e) {
-                    log.error("Error encoding payment message", e);
-                }
-            }
-            
-            redirectUrl = frontendPaymentResultUrl + "?status=success&orderId=" + order.getId() + message;
+            redirectUrl = frontendPaymentResultUrl + "?status=success&orderId=" + order.getId();
         } else {
             // Payment failed
             String orderId = params.getOrDefault("vnp_TxnRef", "unknown");

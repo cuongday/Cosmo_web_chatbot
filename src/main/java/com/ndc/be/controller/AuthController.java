@@ -54,7 +54,7 @@ public class AuthController {
                     currentUserDB.getId(),
                     currentUserDB.getUsername(),
                     currentUserDB.getName(),
-                    currentUserDB.getRole()
+                    currentUserDB.getRole() 
             );
             res.setUser(userLogin);
         }

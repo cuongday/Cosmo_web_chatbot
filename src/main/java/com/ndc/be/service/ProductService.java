@@ -2,13 +2,11 @@ package com.ndc.be.service;
 
 import com.ndc.be.domain.Category;
 import com.ndc.be.domain.Product;
-import com.ndc.be.domain.Supplier;
 import com.ndc.be.domain.mapper.ProductMapper;
 import com.ndc.be.domain.request.CreateProductDTO;
 import com.ndc.be.domain.response.ResultPaginationDTO;
 import com.ndc.be.repository.CategoryRepository;
 import com.ndc.be.repository.ProductRepository;
-import com.ndc.be.repository.SupplierRepository;
 import com.ndc.be.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,7 +24,6 @@ import java.util.Optional;
 public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final SupplierRepository supplierRepository;
     private final CloudinaryService cloudinaryService;
     private final ProductMapper productMapper;
 
@@ -79,15 +76,8 @@ public class ProductService {
         if (categoryOptional.isEmpty()) {
             throw new IdInvalidException("Không tìm thấy danh mục với ID: " + dto.getCategoryId());
         }
-        
-        // Lấy supplier từ ID
-        Optional<Supplier> supplierOptional = supplierRepository.findById(dto.getSupplierId());
-        if (supplierOptional.isEmpty()) {
-            throw new IdInvalidException("Không tìm thấy nhà cung cấp với ID: " + dto.getSupplierId());
-        }
 
         product.setCategory(categoryOptional.get());
-        product.setSupplier(supplierOptional.get());
 
         // Xử lý tải lên hình ảnh
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -111,22 +101,13 @@ public class ProductService {
         if (categoryOptional.isEmpty()) {
             throw new IdInvalidException("Không tìm thấy danh mục với ID: " + product.getCategory().getId());
         }
-        
-        // Lấy supplier từ ID
-        Optional<Supplier> supplierOptional = supplierRepository.findById(product.getSupplier().getId());
-        if (supplierOptional.isEmpty()) {
-            throw new IdInvalidException("Không tìm thấy nhà cung cấp với ID: " + product.getSupplier().getId());
-        }
 
         existingProduct.setName(product.getName());
         existingProduct.setDescription(product.getDescription());
-        existingProduct.setBuyPrice(product.getBuyPrice());
         existingProduct.setSellPrice(product.getSellPrice());
         existingProduct.setQuantity(product.getQuantity());
         existingProduct.setStatus(product.getStatus());
         existingProduct.setCategory(categoryOptional.get());
-        existingProduct.setSupplier(supplierOptional.get());
-        existingProduct.setDate(product.getDate());
 
         // Xử lý tải lên hình ảnh
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -153,14 +134,5 @@ public class ProductService {
             throw new IdInvalidException("Không tìm thấy danh mục với ID: " + categoryId);
         }
         return this.productRepository.findByCategory(categoryOptional.get());
-    }
-
-    // Lấy sản phẩm theo nhà cung cấp
-    public List<Product> getBySupplier(Long supplierId) throws IdInvalidException {
-        Optional<Supplier> supplierOptional = supplierRepository.findById(supplierId);
-        if (supplierOptional.isEmpty()) {
-            throw new IdInvalidException("Không tìm thấy nhà cung cấp với ID: " + supplierId);
-        }
-        return this.productRepository.findBySupplier(supplierOptional.get());
     }
 } 

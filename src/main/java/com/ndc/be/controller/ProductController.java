@@ -31,7 +31,6 @@ public class ProductController {
     private final ProductService productService;
     private final ProductMapper productMapper;
 
-    @PreAuthorize("hasAnyRole('admin', 'employee')")
     @GetMapping("")
     @ApiMessage("Lấy danh sách sản phẩm")
     public ResponseEntity<ResultPaginationDTO> fetchAllProduct(
@@ -42,7 +41,6 @@ public class ProductController {
         return ResponseEntity.ok(rs);
     }
 
-    @PreAuthorize("hasAnyRole('admin', 'employee')")
     @GetMapping("/{id}")
     @ApiMessage("Lấy sản phẩm theo ID")
     public ResponseEntity<Product> getProduct(
@@ -92,12 +90,9 @@ public class ProductController {
         
         this.productMapper.updateEntityFromDto(updateProductDTO, existingProduct);
         
-        // Thiết lập Category và Supplier ID
+        // Thiết lập Category
         existingProduct.setCategory(new com.ndc.be.domain.Category());
         existingProduct.getCategory().setId(updateProductDTO.getCategoryId());
-        
-        existingProduct.setSupplier(new com.ndc.be.domain.Supplier());
-        existingProduct.getSupplier().setId(updateProductDTO.getSupplierId());
         
         Product updatedProduct = this.productService.handleUpdateProduct(id, existingProduct, imageFile);
         return ResponseEntity.ok(updatedProduct);
@@ -114,18 +109,9 @@ public class ProductController {
     }
 
     // Lấy sản phẩm theo danh mục
-    @PreAuthorize("hasAnyRole('admin', 'employee')")
     @GetMapping("/category/{categoryId}")
     @ApiMessage("Lấy sản phẩm theo danh mục")
     public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable("categoryId") Long categoryId) throws IdInvalidException {
         return ResponseEntity.ok(this.productService.getByCategory(categoryId));
-    }
-
-    // Lấy sản phẩm theo nhà cung cấp
-    @PreAuthorize("hasAnyRole('admin', 'employee')")
-    @GetMapping("/supplier/{supplierId}")
-    @ApiMessage("Lấy sản phẩm theo nhà cung cấp")
-    public ResponseEntity<List<Product>> getProductsBySupplier(@PathVariable("supplierId") Long supplierId) throws IdInvalidException {
-        return ResponseEntity.ok(productService.getBySupplier(supplierId));
     }
 } 

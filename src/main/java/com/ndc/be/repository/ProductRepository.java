@@ -8,14 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import com.ndc.be.domain.Product;
 import com.ndc.be.domain.Category;
-import com.ndc.be.domain.Supplier;
 
 import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     List<Product> findByCategory(Category category);
-    List<Product> findBySupplier(Supplier supplier);
     Product findByName(String name);
     boolean existsByName(String name);
     Page<Product> findAll(Pageable pageable);

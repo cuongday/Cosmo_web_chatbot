@@ -35,6 +35,9 @@ public class Order {
     @Enumerated(EnumType.STRING)
     PaymentStatus paymentStatus;
     
+    String phone;
+    String address;
+    
     @Column(columnDefinition = "MEDIUMTEXT")
     String paymentUrl;
     String transactionNo;
@@ -52,10 +55,6 @@ public class Order {
     @OneToMany(mappedBy = "order")
     @JsonIgnore
     private List<OrderDetail> orderDetails;
-
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    Customer customer;
 
     @PrePersist
     public void handleBeforeCreate() {

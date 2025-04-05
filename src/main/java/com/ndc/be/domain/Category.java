@@ -26,8 +26,6 @@ public class Category {
     @Size(min = 2, message = "Tên phải có ít nhất 2 ký tự")
     String name;
 
-    String image;
-
     @Column(columnDefinition = "MEDIUMTEXT")
     String description;
 
@@ -39,11 +37,6 @@ public class Category {
     @OneToMany(mappedBy = "category")
     @JsonIgnore
     private List<Product> products;
-
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<SupplierCategory> supplierCategories;
-
 
     @PrePersist
     public void handleBeforeCreate() {
@@ -60,6 +53,4 @@ public class Category {
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
     }
-    
-    
 }

@@ -11,15 +11,13 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ImportDetailResponse {
+public class CartDetailResponse {
     private Long id;
-    private Long price;
     private Integer quantity;
-    private Long totalPrice;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
-    private Long importHistoryId;
+    private Long cartId;
     private ProductResponse product;
 } 

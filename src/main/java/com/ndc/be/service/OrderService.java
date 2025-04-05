@@ -11,7 +11,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ndc.be.domain.Customer;
 import com.ndc.be.domain.Order;
 import com.ndc.be.domain.OrderDetail;
 import com.ndc.be.domain.Product;
@@ -19,7 +18,6 @@ import com.ndc.be.domain.User;
 import com.ndc.be.domain.request.CreateOrderDTO;
 import com.ndc.be.domain.request.OrderItemDTO;
 import com.ndc.be.domain.response.ResultPaginationDTO;
-import com.ndc.be.repository.CustomerRepository;
 import com.ndc.be.repository.OrderDetailRepository;
 import com.ndc.be.repository.OrderRepository;
 import com.ndc.be.repository.ProductRepository;
@@ -35,7 +33,6 @@ public class OrderService {
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-    private final CustomerRepository customerRepository;
 
     @Transactional
     public Order createOrder(CreateOrderDTO createOrderDTO) {
@@ -45,13 +42,6 @@ public class OrderService {
         User currentUser = userRepository.findByUsername(currentUsername);
         if (currentUser == null) {
             throw new RuntimeException("Không tìm thấy người dùng hiện tại");
-        }
-        
-        // Get customer if provided
-        Customer customer = null;
-        if (createOrderDTO.getCustomerId() != null) {
-            customer = customerRepository.findById(createOrderDTO.getCustomerId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
         }
         
         // Pre-load all products to avoid multiple database calls
@@ -92,7 +82,8 @@ public class OrderService {
                 .paymentMethod(createOrderDTO.getPaymentMethod())
                 .totalPrice(totalPrice)
                 .user(currentUser)
-                .customer(customer)
+                .phone(createOrderDTO.getPhone())
+                .address(createOrderDTO.getAddress())
                 .createdAt(Instant.now())
                 .createdBy(currentUsername)
                 .build();

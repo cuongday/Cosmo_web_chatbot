@@ -19,14 +19,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
-    private final CloudinaryService cloudinaryService;
 
     @Transactional
-    public Category handleCreateCategory(Category category, MultipartFile imageFile) {
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String imageUrl = this.cloudinaryService.uploadImage(imageFile);
-            category.setImage(imageUrl);
-        }      
+    public Category handleCreateCategory(Category category, MultipartFile imageFile) {   
         return categoryRepository.save(category);
     }
 
@@ -64,11 +59,6 @@ public class CategoryService {
         if (existingCategory != null) {
             existingCategory.setName(category.getName());
             existingCategory.setDescription(category.getDescription());
-            
-            if (imageFile != null && !imageFile.isEmpty()) {
-                String imageUrl = this.cloudinaryService.uploadImage(imageFile);
-                existingCategory.setImage(imageUrl);
-            }
             
             return this.categoryRepository.save(existingCategory);
         }

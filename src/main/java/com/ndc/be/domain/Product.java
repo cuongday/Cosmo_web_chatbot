@@ -33,29 +33,18 @@ public class Product  {
     @Column(columnDefinition = "MEDIUMTEXT")
     String description;
 
-    // Giá mua sản phẩm lớn hơn hoặc bằng 0
-    @Min(value = 0, message = "Giá mua sản phẩm phải lớn hơn hoặc bằng 0")
-    long buyPrice;
-
     // Giá bán sản phẩm lớn hơn hoặc bằng 0
     @Min(value = 0, message = "Giá bán sản phẩm phải lớn hơn hoặc bằng 0")
     long sellPrice;
 
-
     int quantity;
     String image;
     String status;
-    Instant date;
-
+    
     Instant createdAt;
     Instant updatedAt;
     String createdBy;
     String updatedBy;
-
-
-    @ManyToOne
-    @JoinColumn(name = "supplier_id")
-    Supplier supplier;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -67,7 +56,7 @@ public class Product  {
 
     @OneToMany(mappedBy = "product")
     @JsonIgnore
-    private List<ImportDetail> importDetails;
+    private List<CartDetail> cartDetails;
 
     @PrePersist
     public void handleBeforeCreate() {

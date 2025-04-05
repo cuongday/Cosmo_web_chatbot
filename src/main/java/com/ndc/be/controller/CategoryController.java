@@ -7,15 +7,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import com.ndc.be.domain.Category;
 import com.ndc.be.domain.mapper.CategoryMapper;
 import com.ndc.be.domain.request.CreateCategoryDTO;
@@ -48,11 +45,10 @@ public class CategoryController {
     }
 
     @PreAuthorize("hasRole('admin')")
-    @PostMapping(value = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "")
     @ApiMessage("Tạo danh mục mới")
     public ResponseEntity<Category> createCategory(
-        @Valid @ModelAttribute CreateCategoryDTO categoryDTO,
-        @RequestPart(value = "image", required = false) MultipartFile imageFile
+        @Valid @ModelAttribute CreateCategoryDTO categoryDTO
     ) throws IdInvalidException {
         boolean isNameExist = this.categoryService.existsByName(categoryDTO.getName());
         if(isNameExist) {
@@ -61,24 +57,23 @@ public class CategoryController {
         
         Category category = this.categoryMapper.toEntity(categoryDTO);
         
-        Category newCategory = this.categoryService.handleCreateCategory(category, imageFile);
+        Category newCategory = this.categoryService.handleCreateCategory(category, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
     }
 
     @PreAuthorize("hasRole('admin')")
-    @PutMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(value = "/{id}")
     @ApiMessage("Cập nhật danh mục theo id")
     public ResponseEntity<Category> updateCategory(
         @PathVariable("id") Long id,
-        @Valid @ModelAttribute UpdateCategoryDTO categoryDTO,
-        @RequestPart(value = "image", required = false) MultipartFile imageFile
+        @Valid @ModelAttribute UpdateCategoryDTO categoryDTO
     ) throws IdInvalidException {
         Category category = this.categoryService.fetchCategoryById(id);
         if(category == null) {
             throw new IdInvalidException("Danh mục với id = " + id + " không tồn tại");
         }   
         this.categoryMapper.updateEntityFromDto(categoryDTO, category);
-        Category updatedCategory = this.categoryService.handleUpdateCategory(id, category, imageFile);
+        Category updatedCategory = this.categoryService.handleUpdateCategory(id, category, null);
         return ResponseEntity.ok(updatedCategory);
     }
 
