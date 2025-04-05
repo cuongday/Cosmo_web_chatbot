@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.ndc.be.domain.Category;
 import com.ndc.be.domain.response.ResultPaginationDTO;
@@ -21,7 +20,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Transactional
-    public Category handleCreateCategory(Category category, MultipartFile imageFile) {   
+    public Category handleCreateCategory(Category category) {   
         return categoryRepository.save(category);
     }
 
@@ -54,7 +53,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public Category handleUpdateCategory(Long id, Category category, MultipartFile imageFile) {
+    public Category handleUpdateCategory(Long id, Category category) {
         Category existingCategory = this.fetchCategoryById(id);
         if (existingCategory != null) {
             existingCategory.setName(category.getName());

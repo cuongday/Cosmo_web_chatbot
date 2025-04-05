@@ -52,7 +52,7 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(
                 authz -> authz
                         .requestMatchers(whiteList).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**", "/api/v1/categories/**").permitAll()
                         .anyRequest().authenticated()
             )
             .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())

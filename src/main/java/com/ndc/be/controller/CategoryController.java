@@ -2,10 +2,10 @@ package com.ndc.be.controller;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +33,6 @@ public class CategoryController {
     private final CategoryService categoryService;
     private final CategoryMapper categoryMapper;
 
-    @PreAuthorize("hasAnyRole('admin', 'employee')")
     @GetMapping("")
     @ApiMessage("Lấy tất cả danh mục")
     public ResponseEntity<ResultPaginationDTO> getCategories(
@@ -48,7 +47,7 @@ public class CategoryController {
     @PostMapping(value = "")
     @ApiMessage("Tạo danh mục mới")
     public ResponseEntity<Category> createCategory(
-        @Valid @ModelAttribute CreateCategoryDTO categoryDTO
+        @Valid @RequestBody CreateCategoryDTO categoryDTO
     ) throws IdInvalidException {
         boolean isNameExist = this.categoryService.existsByName(categoryDTO.getName());
         if(isNameExist) {
@@ -57,7 +56,7 @@ public class CategoryController {
         
         Category category = this.categoryMapper.toEntity(categoryDTO);
         
-        Category newCategory = this.categoryService.handleCreateCategory(category, null);
+        Category newCategory = this.categoryService.handleCreateCategory(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
     }
 
@@ -66,14 +65,14 @@ public class CategoryController {
     @ApiMessage("Cập nhật danh mục theo id")
     public ResponseEntity<Category> updateCategory(
         @PathVariable("id") Long id,
-        @Valid @ModelAttribute UpdateCategoryDTO categoryDTO
+        @Valid @RequestBody UpdateCategoryDTO categoryDTO
     ) throws IdInvalidException {
         Category category = this.categoryService.fetchCategoryById(id);
         if(category == null) {
             throw new IdInvalidException("Danh mục với id = " + id + " không tồn tại");
         }   
         this.categoryMapper.updateEntityFromDto(categoryDTO, category);
-        Category updatedCategory = this.categoryService.handleUpdateCategory(id, category, null);
+        Category updatedCategory = this.categoryService.handleUpdateCategory(id, category);
         return ResponseEntity.ok(updatedCategory);
     }
 
@@ -91,7 +90,6 @@ public class CategoryController {
         return ResponseEntity.ok(null);
     }
 
-    @PreAuthorize("hasAnyRole('admin', 'employee')")
     @GetMapping("/{id}")
     @ApiMessage("Lấy danh mục theo id")
     public ResponseEntity<Category> getCategoryById(
