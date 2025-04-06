@@ -20,7 +20,6 @@ public class ResCreateUserDTO {
     String username;
     GenderEnum gender;
     String address;
-    int age;
     Instant createdAt;
     String avatar;
     Long roleId;

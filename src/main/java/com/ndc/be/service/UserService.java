@@ -38,9 +38,13 @@ public class UserService {
         }
 
 
-        if(user.getRole() != null){
+        if (user.getRole() != null) {
             Role r = this.roleService.fetchRoleById(user.getRole().getId());
-            user.setRole(r != null ? r : null);
+            user.setRole(r != null ? r : this.roleService.fetchRoleByName("employee"));
+        } else {
+            // Nếu role null, gán role mặc định là "employee"
+            Role defaultRole = this.roleService.fetchRoleByName("user");
+            user.setRole(defaultRole);
         }
 
         return this.userRepository.save(user);
@@ -80,22 +84,24 @@ public class UserService {
     }
 
     public User handleUpdateUser(Long userId, UpdateUserDTO reqUser, MultipartFile avatarFile) {
-        User currentUser = this.fetchUserById(userId);
+        Optional<User> userOptional = this.userRepository.findById(userId);
+        if(!userOptional.isPresent()){
+            throw new EntityNotFoundException("Không tìm thấy người dùng với id: " + userId);
+        }
 
-        if (currentUser!=null) {
-            currentUser.setAddress(reqUser.getAddress());
-            currentUser.setGender(reqUser.getGender());
-            currentUser.setName(reqUser.getName());
+        User currentUser = userOptional.get();
+        currentUser.setAddress(reqUser.getAddress());
+        currentUser.setGender(reqUser.getGender());
+        currentUser.setName(reqUser.getName());
 
-            if(avatarFile != null && !avatarFile.isEmpty()){
-                String avatarUrl = this.cloudinaryService.uploadImage(avatarFile);
-                currentUser.setAvatar(avatarUrl);
-            }
+        if(avatarFile != null && !avatarFile.isEmpty()){
+            String avatarUrl = this.cloudinaryService.uploadImage(avatarFile);
+            currentUser.setAvatar(avatarUrl);
+        }
 
-            if(reqUser.getRoleId() != null){
-                Role r = this.roleService.fetchRoleById(reqUser.getRoleId());
-                currentUser.setRole(r != null ? r : null);
-            }
+        if(reqUser.getRoleId() != null){
+            Role r = this.roleService.fetchRoleById(reqUser.getRoleId());
+            currentUser.setRole(r != null ? r : null);
         }
         currentUser = this.userRepository.save(currentUser);
         return currentUser;
@@ -128,6 +134,7 @@ public class UserService {
         resCreateUserDTO.setCreatedAt(user.getCreatedAt());
         resCreateUserDTO.setGender(user.getGender());
         resCreateUserDTO.setAddress(user.getAddress());
+        resCreateUserDTO.setRoleId(user.getRole().getId());
 
         return resCreateUserDTO;
     }

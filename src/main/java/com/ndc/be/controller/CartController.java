@@ -16,13 +16,12 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/cart")
+@RequestMapping("/api/v1/carts")
 @RequiredArgsConstructor
 public class CartController {
     private final CartService cartService;
 
     @ApiMessage("Thêm sản phẩm vào giỏ hàng")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<?> addProductToCart(@RequestBody Map<String, Object> request) {
         Long productId = Long.parseLong(request.get("productId").toString());
@@ -39,7 +38,6 @@ public class CartController {
     }
 
     @ApiMessage("Cập nhật số lượng sản phẩm trong giỏ hàng")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PutMapping("/update/{cartDetailId}")
     public ResponseEntity<?> updateCartItemQuantity(
             @PathVariable Long cartDetailId,
@@ -57,7 +55,6 @@ public class CartController {
     }
 
     @ApiMessage("Xóa sản phẩm khỏi giỏ hàng")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/remove/{cartDetailId}")
     public ResponseEntity<?> removeCartItem(@PathVariable Long cartDetailId) {
         try {
@@ -69,7 +66,6 @@ public class CartController {
     }
 
     @ApiMessage("Lấy danh sách sản phẩm trong giỏ hàng")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping
     public ResponseEntity<List<CartDetail>> getCartItems() {
         List<CartDetail> cartItems = cartService.getCartItems();
@@ -77,7 +73,6 @@ public class CartController {
     }
 
     @ApiMessage("Xóa tất cả sản phẩm trong giỏ hàng")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/clear")
     public ResponseEntity<?> clearCart() {
         cartService.clearCart();

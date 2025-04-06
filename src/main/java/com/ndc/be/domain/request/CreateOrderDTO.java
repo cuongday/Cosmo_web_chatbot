@@ -1,10 +1,7 @@
 package com.ndc.be.domain.request;
 
-import java.util.List;
-
 import com.ndc.be.util.constant.PaymentMethod;
 
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +19,4 @@ public class CreateOrderDTO {
     private String phone;
     
     private String address;
-    
-    @NotEmpty(message = "Danh sách sản phẩm không được để trống")
-    private List<OrderItemDTO> items;
 } 

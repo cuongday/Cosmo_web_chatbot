@@ -60,4 +60,8 @@ public class RoleService {
     public void deleteById(long id){
         this.roleRepository.deleteById(id);
     }
+
+    public Role fetchRoleByName(String name){
+        return this.roleRepository.findByName(name);
+    }
 }

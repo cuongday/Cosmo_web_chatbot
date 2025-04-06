@@ -45,51 +45,46 @@ public class OrderController {
     
     @PreAuthorize("hasAnyRole('admin', 'employee')")
     @PostMapping
-    @ApiMessage("Tạo đơn hàng mới thành công")
+    @ApiMessage("Tạo đơn hàng từ giỏ hàng thành công")
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody CreateOrderDTO createOrderDTO) {
         // Debug log for incoming DTO
         System.out.println("Received order request: " + createOrderDTO);
         System.out.println("Payment method: " + createOrderDTO.getPaymentMethod());
-        System.out.println("Items count: " + createOrderDTO.getItems().size());
         
-        // Log each item
-        for (int i = 0; i < createOrderDTO.getItems().size(); i++) {
-            var item = createOrderDTO.getItems().get(i);
-            System.out.println("Item " + i + ": ProductID=" + item.getProductId() + 
-                               ", Quantity=" + item.getQuantity() + 
-                               ", SellPrice=" + item.getSellPrice());
-        }
-        
-        Order order = orderService.createOrder(createOrderDTO);
-        
-        // Log total price of created order
-        System.out.println("Created order with ID: " + order.getId() + ", Total Price: " + order.getTotalPrice());
-   
-        OrderResponse response = OrderResponse.builder()
-            .order(order)
-            .build();
-
-        // Xử lý theo phương thức thanh toán
-        if (order.getPaymentMethod() == PaymentMethod.COD) {
-            // Nếu phương thức là COD, đặt trạng thái và thông báo phù hợp
-            order.setPaymentStatus(PaymentStatus.PENDING);
-            order.setPaymentMessage("Cảm ơn bạn đã đặt hàng tại Cosmo");
-            orderService.updateOrder(order);
-        } else if (order.getPaymentMethod() == PaymentMethod.TRANSFER) {
-            // Nếu phương thức là TRANSFER, tạo URL thanh toán VNPay
-            String orderInfo = "Thanh toan don hang: " + order.getId();
-            String paymentUrl = vnPayService.createPaymentUrl(
-                order.getId(), 
-                order.getTotalPrice(), 
-                orderInfo
-            );
+        try {
+            Order order = orderService.createOrder(createOrderDTO);
             
-            order.setPaymentUrl(paymentUrl);
-            orderService.updateOrder(order);
-            response.setPaymentUrl(paymentUrl);
+            // Log total price of created order
+            System.out.println("Created order with ID: " + order.getId() + ", Total Price: " + order.getTotalPrice());
+       
+            OrderResponse response = OrderResponse.builder()
+                .order(order)
+                .build();
+
+            // Xử lý theo phương thức thanh toán
+            if (order.getPaymentMethod() == PaymentMethod.COD) {
+                // Nếu phương thức là COD, đặt trạng thái và thông báo phù hợp
+                order.setPaymentStatus(PaymentStatus.PENDING);
+                order.setPaymentMessage("Cảm ơn bạn đã đặt hàng tại Cosmo");
+                orderService.updateOrder(order);
+            } else if (order.getPaymentMethod() == PaymentMethod.TRANSFER) {
+                // Nếu phương thức là TRANSFER, tạo URL thanh toán VNPay
+                String orderInfo = "Thanh toan don hang: " + order.getId();
+                String paymentUrl = vnPayService.createPaymentUrl(
+                    order.getId(), 
+                    order.getTotalPrice(), 
+                    orderInfo
+                );
+                
+                order.setPaymentUrl(paymentUrl);
+                orderService.updateOrder(order);
+                response.setPaymentUrl(paymentUrl);
+            }
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Lỗi khi tạo đơn hàng: " + e.getMessage());
         }
-        
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
     @PreAuthorize("hasAnyRole('admin', 'employee')")

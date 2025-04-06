@@ -15,8 +15,9 @@ import com.ndc.be.domain.Order;
 import com.ndc.be.domain.OrderDetail;
 import com.ndc.be.domain.Product;
 import com.ndc.be.domain.User;
+import com.ndc.be.domain.CartDetail;
 import com.ndc.be.domain.request.CreateOrderDTO;
-import com.ndc.be.domain.request.OrderItemDTO;
+// import com.ndc.be.domain.request.OrderItemDTO;
 import com.ndc.be.domain.response.ResultPaginationDTO;
 import com.ndc.be.repository.OrderDetailRepository;
 import com.ndc.be.repository.OrderRepository;
@@ -33,10 +34,11 @@ public class OrderService {
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final CartService cartService;
 
     @Transactional
     public Order createOrder(CreateOrderDTO createOrderDTO) {
-        // Get current user
+        // Lấy thông tin người dùng hiện tại
         String currentUsername = SecurityUtil.getCurrentUserLogin()
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng hiện tại"));
         User currentUser = userRepository.findByUsername(currentUsername);
@@ -44,40 +46,33 @@ public class OrderService {
             throw new RuntimeException("Không tìm thấy người dùng hiện tại");
         }
         
-        // Pre-load all products to avoid multiple database calls
-        List<Long> productIds = createOrderDTO.getItems().stream()
-                .map(OrderItemDTO::getProductId)
-                .toList();
-                
-        List<Product> products = productRepository.findAllById(productIds);
+        // Lấy danh sách sản phẩm từ giỏ hàng
+        List<CartDetail> cartItems = cartService.getCartItems();
         
-        // Create a map for quick access to products
-        var productMap = products.stream()
-                .collect(java.util.stream.Collectors.toMap(Product::getId, p -> p));
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException("Giỏ hàng của bạn đang trống, không thể tạo đơn hàng");
+        }
         
-        // Calculate total price using prices from frontend (OrderItemDTO)
+        // Tính tổng giá trị đơn hàng
         long totalPrice = 0;
-        for (OrderItemDTO item : createOrderDTO.getItems()) {
-            Product product = productMap.get(item.getProductId());
-            if (product == null) {
-                throw new RuntimeException("Không tìm thấy sản phẩm với ID: " + item.getProductId());
-            }
-            // Use the sellPrice from OrderItemDTO instead of product
-            long itemPrice = item.getSellPrice() * item.getQuantity();
+        for (CartDetail item : cartItems) {
+            Product product = item.getProduct();
+            // Sử dụng giá bán từ sản phẩm
+            long itemPrice = product.getSellPrice() * item.getQuantity();
             
-            // Debug log for price calculation
-            System.out.println("Product ID: " + item.getProductId() + 
-                               ", SellPrice: " + item.getSellPrice() + 
+            // Debug log
+            System.out.println("Product ID: " + product.getId() + 
+                               ", SellPrice: " + product.getSellPrice() + 
                                ", Quantity: " + item.getQuantity() + 
                                ", ItemTotal: " + itemPrice);
             
             totalPrice += itemPrice;
         }
         
-        // Debug total price
+        // Debug tổng giá trị
         System.out.println("Final Total Price: " + totalPrice);
         
-        // Create and save order
+        // Tạo và lưu đơn hàng
         Order order = Order.builder()
                 .paymentMethod(createOrderDTO.getPaymentMethod())
                 .totalPrice(totalPrice)
@@ -90,12 +85,12 @@ public class OrderService {
         
         Order savedOrder = orderRepository.save(order);
         
-        // Create and save order details
+        // Tạo và lưu chi tiết đơn hàng
         List<OrderDetail> orderDetails = new ArrayList<>();
-        for (OrderItemDTO item : createOrderDTO.getItems()) {
-            Product product = productMap.get(item.getProductId());
+        for (CartDetail item : cartItems) {
+            Product product = item.getProduct();
             
-            // Update product stock
+            // Cập nhật số lượng tồn kho
             int currentStock = product.getQuantity();
             if (currentStock < item.getQuantity()) {
                 throw new RuntimeException("Số lượng sản phẩm " + product.getName() + " không đủ");
@@ -106,16 +101,18 @@ public class OrderService {
             OrderDetail orderDetail = OrderDetail.builder()
                     .order(savedOrder)
                     .product(product)
-                    // Use sellPrice from OrderItemDTO
-                    .price(item.getSellPrice())
+                    .price(product.getSellPrice())
                     .quantity(item.getQuantity())
-                    .totalPrice(item.getSellPrice() * item.getQuantity())
+                    .totalPrice(product.getSellPrice() * item.getQuantity())
                     .createdAt(Instant.now())
                     .createdBy(currentUsername)
                     .build();
             
             orderDetails.add(orderDetailRepository.save(orderDetail));
         }
+        
+        // Xóa giỏ hàng sau khi đặt hàng thành công
+        cartService.clearCart();
         
         return savedOrder;
     }
